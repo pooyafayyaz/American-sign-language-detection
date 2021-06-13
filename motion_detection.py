@@ -10,13 +10,14 @@ cap = cv2.VideoCapture("/home/pooya/Downloads/cropped_bodypatches/body-ac_aiswar
 
 # Read the first 2 frames
 _,first_frame = cap.read()
-_,second_frame = cap.read()
+ret,second_frame = cap.read()
 
 # Set the threshold to remove small movments 
-MOVEMENT_THRESHOLD= 5000
-
-while (cap.isOpened() and second_frame.any() != None) :
-	print(first_frame.shape,second_frame.shape)
+MOVEMENT_THRESHOLD= 3000
+i=0
+start_motion_frame = None 
+last_motion_frame = None
+while (ret) :
 	# Get the difference between two consecutive frames	
 	frame_delta = cv2.absdiff(first_frame, second_frame)
 	# Convert it to grayscale video 
@@ -43,15 +44,22 @@ while (cap.isOpened() and second_frame.any() != None) :
 		# If the contour is too small, ignore it, otherwise, there's transient
 		# movement
 		if cv2.contourArea(c) > MOVEMENT_THRESHOLD:
+		    # Set the frames for motion
+		    if start_motion_frame ==None:
+		    	start_motion_frame = i 
+		    if last_motion_frame == None or last_motion_frame < i:
+		    	last_motion_frame = i
+		    
 		    # Draw a rectangle
 		    cv2.rectangle(first_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 	frame_delta = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-	cv2.imshow("frame", np.hstack((frame_delta, first_frame)))
-	cv2.imwrite("frame.png", np.hstack((frame_delta, first_frame)))
+	cv2.imwrite("frame"+ str(i) + ".png", np.hstack((frame_delta, first_frame)))
 	first_frame = second_frame
-	_,second_frame = cap.read()
+	ret,second_frame = cap.read()
+	i+=1
 	
+print(start_motion_frame,last_motion_frame)
 # Close the video
 cv2.waitKey(0)
 cv2.destroyAllWindows()
