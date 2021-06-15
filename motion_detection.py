@@ -3,10 +3,23 @@
 import imutils
 import cv2
 import numpy as np
+import os
+from natsort import natsorted
+
+def variance_of_laplacian(image):
+	# compute the Laplacian of the image and then return the focus
+	# measure, which is simply the variance of the Laplacian
+	return cv2.Laplacian(image, cv2.CV_64F).var()
 
 
 # Read the video file 
 cap = cv2.VideoCapture("/home/pooya/Downloads/cropped_bodypatches/body-ac_aiswarya_1_rgb.avi") 
+
+file_name = "body-ac_aiswarya_1_rgb"
+video_dir = "/home/pooya/Downloads/cropped_bodypatches/"
+json_dir = "/home/pooya/Desktop/ASL/result/"
+
+
 
 # Read the first 2 frames
 _,first_frame = cap.read()
@@ -34,7 +47,8 @@ while (ret) :
 	
 	# Find the contours, ignore the hierarchy
 	cnts, _ = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+	
+	
 	# loop over the contours
 	for c in cnts:
 
@@ -54,10 +68,15 @@ while (ret) :
 		    cv2.rectangle(first_frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
 	frame_delta = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
-	cv2.imwrite("frame"+ str(i) + ".png", np.hstack((frame_delta, first_frame)))
+	
+
+	
+	cv2.imshow("img", np.hstack((frame_delta, first_frame)))
+	#cv2.imwrite("frame"+ str(i) + ".png", np.hstack((frame_delta, first_frame)))
 	first_frame = second_frame
 	ret,second_frame = cap.read()
 	i+=1
+	cv2.waitKey(0)
 	
 print(start_motion_frame,last_motion_frame)
 # Close the video
