@@ -5,13 +5,18 @@ from dtaidistance import dtw
 import os
 from natsort import natsorted
 from math import sqrt
+from glob import glob
+import random
 
-file1 = "/Users/pooya/Downloads/result/body-lightbulb_qian_1_rgb/"
-file2 = "/Users/pooya/Downloads/result/body-lightbulb_sofia_14_rgb/"
+dataset_dir = "/Users/pooya/Downloads/result/"
+raw_file_dir = "/Users/pooya/Downloads/cropped_bodypatches/"
 
-raw_file1 = "/Users/pooya/Downloads/cropped_bodypatches/body-lightbulb_qian_1_rgb.avi"
-raw_file2 = "/Users/pooya/Downloads/cropped_bodypatches/body-lightbulb_sofia_14_rgb.avi"
+all_file_names = glob(dataset_dir+"*")
 
+gloss = ['lightbulb', 'turndown', 'calendar', 'picture', 'bedroom', 'house', 'message', 'food', 'snow', 'time', 'turnon', 'place',
+         'dim', 'wakeup', 'traffic', 'ac', 'order', 'schedule', 'direction', 'email', 'weather', 'night', 'temperature', 'raise',
+         'turnoff', 'play', 'quote', 'rain', 'restaurant', 'camera', 'snooze', 'phone', 'day', 'list', 'kitchen', 'heat', 'cancel',
+         'weekend', 'alarm', 'door', 'shopping', 'room', 'goodmorning', 'doorbell', 'movie', 'game', 'work', 'event', 'lock', 'sunny', 'stop']
 
 
 def read_json(file):
@@ -66,23 +71,36 @@ def read_json(file):
 
     return np.array(pose_seq)
 
-pose_seq1 = read_json(file1)
-pose_seq2 = read_json(file2)
+def dtw_pipline(file1,file2):
+    pose_seq1 = read_json(dataset_dir +file1+"/")
+    pose_seq2 = read_json(dataset_dir + file2+"/")
 
-print(pose_seq1.shape)
-print(pose_seq2.shape)
+    start_vid1 ,end_vid1 = get_motion_seq(raw_file_dir + file1+ ".avi")
+    start_vid2 ,end_vid2 = get_motion_seq(raw_file_dir +  file1 + ".avi")
+    start_vid ,end_vid = max(start_vid1,start_vid2),max(end_vid1,end_vid2)
 
-start_vid1 ,end_vid1 = get_motion_seq(raw_file1 )
-start_vid2 ,end_vid2 = get_motion_seq(raw_file2 )
-start_vid ,end_vid = max(start_vid1,start_vid2),max(end_vid1,end_vid2)
+    _ , dtw_matrix =  dtw_ndim.warping_paths(pose_seq1.astype(np.double), pose_seq2.astype(np.double))
+    dtw_matrix  = dtw_matrix[1:,1:]
+    best_path = dtw.best_path(dtw_matrix)
+    best_path = np.array(best_path)
+    best_path = best_path[ ((start_vid<best_path) & (best_path< end_vid)).all(axis=1) ]
+    print(best_path)
 
-print(start_vid1 ,end_vid1)
-print(start_vid2 ,end_vid2)
-print(start_vid ,end_vid)
 
-_ , dtw_matrix =  dtw_ndim.warping_paths(pose_seq1.astype(np.double), pose_seq2.astype(np.double))
-dtw_matrix  = dtw_matrix[1:,1:]
-best_path = dtw.best_path(dtw_matrix)
-best_path = np.array(best_path)
-print(best_path)
-print(best_path[ ((start_vid<best_path) & (best_path< end_vid)).all(axis=1) ])
+
+def read_dataset():
+    for word in gloss:
+        matching = [s for s in all_file_names if "body-"+word+"_" in s]
+        for vid in matching:
+            for j in range(3):
+                file1 = vid.split("/")[-1]
+                file2 = matching[random.randint(0,len(matching)-1)].split("/")[-1]
+                dtw_pipline(file1,file2)
+
+read_dataset()
+
+
+
+
+
+
