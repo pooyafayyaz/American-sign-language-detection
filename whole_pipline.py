@@ -7,6 +7,9 @@ from natsort import natsorted
 from math import sqrt
 from glob import glob
 import random
+import csv
+from tqdm import tqdm
+
 
 dataset_dir = "/Users/pooya/Downloads/result/"
 raw_file_dir = "/Users/pooya/Downloads/cropped_bodypatches/"
@@ -18,9 +21,12 @@ gloss = ['lightbulb', 'turndown', 'calendar', 'picture', 'bedroom', 'house', 'me
          'turnoff', 'play', 'quote', 'rain', 'restaurant', 'camera', 'snooze', 'phone', 'day', 'list', 'kitchen', 'heat', 'cancel',
          'weekend', 'alarm', 'door', 'shopping', 'room', 'goodmorning', 'doorbell', 'movie', 'game', 'work', 'event', 'lock', 'sunny', 'stop']
 
+csv_file = open("result.csv", "w")
+writer = csv.writer(csv_file)
 
 def read_json(file):
     pose_seq = []
+    
     for r, d, f in os.walk(file):
         #sort based on the frame number
         for file in natsorted(f):
@@ -29,7 +35,10 @@ def read_json(file):
                 with open(r+file, "r") as read_file:
                     data = read_file.read()
                     data = data.replace('array', 'np.array').replace("float32","np.float32")
-                    d = eval(data)
+                    try:
+                        d = eval(data)
+                    except:
+                        return []
                     # all the key points
                     body_Pose = d[0]["keypoints"]
 
@@ -74,9 +83,13 @@ def read_json(file):
 def dtw_pipline(file1,file2):
     pose_seq1 = read_json(dataset_dir +file1+"/")
     pose_seq2 = read_json(dataset_dir + file2+"/")
-
+    
     start_vid1 ,end_vid1 = get_motion_seq(raw_file_dir + file1+ ".avi")
     start_vid2 ,end_vid2 = get_motion_seq(raw_file_dir +  file1 + ".avi")
+    
+    if(start_vid1 == None or start_vid2 == None or end_vid1 == None or end_vid2 == None or pose_seq1 == [] or pose_seq2 == []):
+        return True
+    
     start_vid ,end_vid = max(start_vid1,start_vid2),max(end_vid1,end_vid2)
 
     _ , dtw_matrix =  dtw_ndim.warping_paths(pose_seq1.astype(np.double), pose_seq2.astype(np.double))
@@ -84,14 +97,18 @@ def dtw_pipline(file1,file2):
     best_path = dtw.best_path(dtw_matrix)
     best_path = np.array(best_path)
     best_path = best_path[ ((start_vid<best_path) & (best_path< end_vid)).all(axis=1) ]
-    print(best_path)
+    
+    #if(best_path.size == 0):
+    #    print("Empty  ",start_vid1,start_vid2,end_vid1,end_vid2)
 
+    
+    writer.writerow([file1,file2, best_path.flatten()])
 
 
 def read_dataset():
-    for word in gloss:
+    for word in tqdm(gloss):
         matching = [s for s in all_file_names if "body-"+word+"_" in s]
-        for vid in matching:
+        for vid in tqdm(matching):
             for j in range(3):
                 file1 = vid.split("/")[-1]
                 file2 = matching[random.randint(0,len(matching)-1)].split("/")[-1]
