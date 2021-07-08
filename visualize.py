@@ -127,6 +127,7 @@ while success:
 	plotJoints(pose_data,img)
 	cv2.imshow("img",img)
 
+	
 	success, img = cap.read()
 	
 	cv2.waitKey(0)
