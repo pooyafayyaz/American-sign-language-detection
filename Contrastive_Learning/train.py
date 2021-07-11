@@ -3,28 +3,28 @@ from data_loader import LSTMDataset
 
 num_epochs = 500
 batch_size = 20
-num_layers = 3
 learning_rate = 0.00001
-sample_rate = 20
-hidden_size = 1000
-drop_out = 0.5
+mlp_hidden_size = 1000
+projection_size = 512
 num_class = 51
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ('device', device)
 
-input_path = "data.csv"
-sample_rate_sk = 20
+input_path = "result.csv"
 
-train_dataset = ASLDataset(input_path, sample_rate)
+train_dataset = HandPatchdataset(input_path, "./frames/")
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6)
 
-model = LSTM(input_len, hidden_size, num_layers, num_class, drop_out)
+model = Contrastive(mlp_hidden_size, projection_size)
 model.to(device)
 
-criterion = torch.nn.CrossEntropyLoss()
+
+
 optimizer = torch.optim.Adam(list(model.parameters()), lr=learning_rate)
 n_total_steps = len(train_loader)
+scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(n_total_steps))
+criterion = torch.nn.MSELoss()
 
 for epoch in range(num_epochs):
 	for i, (inputs, labels) in enumerate(train_dataloader):
