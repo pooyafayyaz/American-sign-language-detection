@@ -1,6 +1,12 @@
 from model import *
 from data_loader import LSTMDataset
 
+
+def collate_fn(batch):
+    batch = list(filter(lambda x: x is not None, batch))
+    return torch.utils.data.dataloader.default_collate(batch)
+
+
 num_epochs = 500
 batch_size = 20
 learning_rate = 0.00001
@@ -14,12 +20,10 @@ print ('device', device)
 input_path = "result.csv"
 
 train_dataset = HandPatchdataset(input_path, "./frames/")
-train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6)
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6 ,collate_fn=collate_fn)
 
 model = Contrastive(mlp_hidden_size, projection_size)
 model.to(device)
-
-
 
 optimizer = torch.optim.Adam(list(model.parameters()), lr=learning_rate)
 n_total_steps = len(train_loader)

@@ -24,18 +24,22 @@ class HandPatchdataset(Dataset):
         return self.dataset.shape[0]
 
     def __getitem__(self,idx):
-        img_name_1 = self.dataset[idx][0]
-        img_name_2 = self.dataset[idx][1]
-        
-        img_frame_1 = self.dataset[idx][2][0]
-        img_frame_2 = self.dataset[idx][2][1]
-        
-        image1_l = io.imread(self.impath+img_name_1+"/frame"+img_frame_1+"_l.jpg")
-        image1_r = io.imread(self.impath+img_name_1+"/frame"+img_frame_1+"_r.jpg")
-        
-        image2_l = io.imread(self.impath+img_name_2+"/frame"+img_frame_2+"_l.jpg")
-        image2_r = io.imread(self.impath+img_name_2+"/frame"+img_frame_2+"_r.jpg")
+        try:
+    
+            img_name_1 = self.dataset[idx][0]
+            img_name_2 = self.dataset[idx][1]
+            
+            img_frame_1 = self.dataset[idx][2][0]
+            img_frame_2 = self.dataset[idx][2][1]
+            
+            image1_l = io.imread(self.impath+img_name_1+"/frame"+img_frame_1+"_l.jpg")
+            image1_r = io.imread(self.impath+img_name_1+"/frame"+img_frame_1+"_r.jpg")
+            
+            image2_l = io.imread(self.impath+img_name_2+"/frame"+img_frame_2+"_l.jpg")
+            image2_r = io.imread(self.impath+img_name_2+"/frame"+img_frame_2+"_r.jpg")
 
-        return image1_l,image1_r,image2_l,image2_r
-
-
+            return image1_l.tensor(),image1_r.tensor(),image2_l.tensor(),image2_r.tensor()
+        
+        except:
+            
+            return None
