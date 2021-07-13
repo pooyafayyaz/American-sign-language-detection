@@ -43,7 +43,7 @@ for epoch in range(num_epochs):
 		image2_l = inputs[2].to(device).float()
 		image2_r = inputs[3].to(device).float()
 
-		lable = inputs[4].to(device).float()
+		lable = (1-inputs[4].to(device)).float()
 		
 		model.train()
 
