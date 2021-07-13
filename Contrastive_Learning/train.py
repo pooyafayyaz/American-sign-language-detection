@@ -1,7 +1,7 @@
 from model import *
 from dataloader import HandPatchdataset
 from torch.optim.lr_scheduler import StepLR
-from Loss import ContrastiveLoss
+from loss import ContrastiveLoss
 
 def collate_fn(batch):
     batch = list(filter(lambda x: x is not None, batch))
@@ -20,9 +20,10 @@ gamma = 0.1
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print ('device', device)
 
-input_path = "../result.csv"
+positive_path = "../positive_result.csv"
+negative_path = "../negative_result.csv"
 
-train_dataset = HandPatchdataset(input_path, "../frames/")
+train_dataset = HandPatchdataset(positive_path,negative_path, "../frames/")
 train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=6)
 
 

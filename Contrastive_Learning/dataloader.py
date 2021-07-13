@@ -20,7 +20,7 @@ class HandPatchdataset(Dataset):
         self.p_data.iloc[:,2] = self.p_data.iloc[:,2].apply(self.row_to_array)
         self.n_data.iloc[:,2] = self.n_data.iloc[:,2].apply(self.row_to_array)
         
-        self.data = pd.concat([self.data,self.n_data],ignore_index=True,axis=0)
+        self.data = pd.concat([self.p_data,self.n_data],ignore_index=True,axis=0)
         
         self.dataset = [] 
         for index, row in self.data.iterrows():
