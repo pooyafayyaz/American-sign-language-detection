@@ -12,11 +12,16 @@ class HandPatchdataset(Dataset):
     def row_to_array(idx,data_str):
     	 return np.array(data_str[1:-1].strip().split()).reshape((-1,2))    	 
     	
-    def __init__(self,data_path,impath):
-        self.data = pd.read_csv(data_path)
+    def __init__(self,positive_data_path,negative_data_path,impath):
+        self.p_data = pd.read_csv(positive_data_path, header=None)
+        self.n_data = pd.read_csv(negative_data_path, header=None)
         self.impath = impath
 
-        self.data.iloc[:,2] = self.data.iloc[:,2].apply(self.row_to_array)
+        self.p_data.iloc[:,2] = self.p_data.iloc[:,2].apply(self.row_to_array)
+        self.n_data.iloc[:,2] = self.n_data.iloc[:,2].apply(self.row_to_array)
+        
+        self.data = 
+        
         self.dataset = [] 
         for index, row in self.data.iterrows():
             for item in row[2]:
