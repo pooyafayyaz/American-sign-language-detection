@@ -1,6 +1,7 @@
 from model import *
 from dataloader import HandPatchdataset
 from torch.optim.lr_scheduler import StepLR
+from Loss import ContrastiveLoss
 
 def collate_fn(batch):
     batch = list(filter(lambda x: x is not None, batch))
@@ -31,7 +32,7 @@ model.to(device)
 optimizer = torch.optim.Adam(list(model.parameters()), lr=learning_rate)
 n_total_steps = len(train_dataloader)
 scheduler = StepLR(optimizer, step_size=step_size, gamma=gamma)
-criterion = torch.nn.MSELoss()
+criterion = ContrastiveLoss(1)
 
 for epoch in range(num_epochs):
 	for i, inputs in enumerate(train_dataloader):
@@ -42,6 +43,8 @@ for epoch in range(num_epochs):
 		image2_l = inputs[2].to(device).float()
 		image2_r = inputs[3].to(device).float()
 
+		lable = inputs[4].to(device).float()
+		
 		model.train()
 
 		optimizer.zero_grad()
@@ -52,7 +55,7 @@ for epoch in range(num_epochs):
 		image2_r_out = model(image2_r)
 		
 		# calculate loss
-		loss = criterion(image1_l_out, image2_l_out) + criterion(image1_r_out, image1_r_out)
+		loss = criterion(image1_l_out, image2_l_out,lable) + criterion(image1_r_out, image1_r_out,lable)
 		# credit assignment
 		loss.backward()
 		# update model weights
