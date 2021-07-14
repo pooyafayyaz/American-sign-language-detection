@@ -33,8 +33,8 @@ model.to(device)
 optimizer = torch.optim.Adam(list(model.parameters()), lr=learning_rate)
 n_total_steps = len(train_dataloader)
 scheduler = StepLR(optimizer, step_size=step_size, gamma=gamma)
-criterion = ContrastiveLoss(1)
-
+criterion = ContrastiveLoss(0.1)
+best_loss = 100
 for epoch in range(num_epochs):
 	for i, inputs in enumerate(train_dataloader):
 		
@@ -63,6 +63,9 @@ for epoch in range(num_epochs):
 		optimizer.step()
 
 		if (i+1) % 100 == 0:
+			if  loss < best_loss: 
+				best_loss = loss 
+				torch.save(model.state_dict(), 'best-model-parameters.pt')
 			print (f'Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{n_total_steps}], Loss: {loss.item():.4f}')
 
 print('Finished Training')
