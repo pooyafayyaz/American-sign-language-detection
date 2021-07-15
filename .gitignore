@@ -1,3 +1,5 @@
 frames/*
 Contrastive_Learning/__pycache__/*
 __pycache__/*
+*.npy
+infer_result/*
